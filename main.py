@@ -7,4 +7,4 @@ from historyextract import HistoryExtract
 
 historyextractor = HistoryExtract()
 historyextractor.start()
-print(historyextractor.starting_history_db)
+print(historyextractor.starting_history_df)

@@ -18,6 +18,7 @@ import shutil
 import sqlite3
 import datetime
 import platform
+import pandas as pd
 
 class HistoryExtract:
 
@@ -31,9 +32,9 @@ class HistoryExtract:
     def copy(self):
         shutil.copy(self.history_db, 'assets\\curr_history')
 
-    # # since chrome time is in miliseconds starting from 1601, we need to convert it into regular time
-    # def fromchrometime(self, int_time):
-    #     return datetime(int_time / 1000000 + (datetime.strftime('%s', '1601-01-01')), 'unixepoch')
+    # converts chrome microseconds into realtime timestamps
+    def chrome_to_real_time(self, microseconds):
+        return datetime.datetime(1601, 1, 1) + datetime.timedelta(microseconds=microseconds)
 
     # convert database to tuples
     def extract(self):
@@ -42,20 +43,25 @@ class HistoryExtract:
         select_statement = "SELECT urls.url, urls.last_visit_time, urls.title " \
                            "FROM urls, visits WHERE urls.id = visits.url;"
         cursor.execute(select_statement)
-        db_set = list(cursor.fetchall()) # originally tuple
+        db_tuple = cursor.fetchall() # originally tuple
 
-        # convert integer time to regular time
-        for item in db_set:
-            print(item[1])
-            item[1] = datetime.datetime.utcfromtimestamp(item[1] / 1e16 - datetime.datetime(1601, 1, 1).timestamp())
+        # convert chrome timestamps into regular ones and place into separate lists
+        db_timestamps = [self.chrome_to_real_time(n[1]) for n in db_tuple]
+        db_names = [n[0] for n in db_tuple]
+        db_urls = [n[2] for n in db_tuple]
 
-        return db_set
+        # store in dataframe
+        history_df = pd.DataFrame({'names': db_names, 'timestamp': db_timestamps, 'urls': db_urls})
+
+        return history_df
 
     def start(self):
-        self.starting_history_db = self.database_extraction()
+        self.starting_history_df = self.database_extraction()
+        self.starting_history_df.to_csv('assets\\starting_history.csv')
 
     def stop(self):
-        self.ending_history_db = self.database_extraction()
+        self.ending_history_df = self.database_extraction()
+        self.starting_history_df.to_csv('assets\\stopping_history.csv')
 
     # obtain history database
     def database_extraction(self):
