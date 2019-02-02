@@ -16,6 +16,8 @@ https://geekswipe.net/technology/computing/analyze-chromes-browsing-history-with
 import os
 import shutil
 import sqlite3
+import datetime
+import platform
 
 class HistoryExtract:
 
@@ -25,32 +27,46 @@ class HistoryExtract:
         files = os.listdir(data_path)
         self.history_db = os.path.join(data_path, item)
 
-    # extract to make sure
+    # copy the history file so we don't view the history file that could be currently be in use by Google Chrome
     def copy(self):
-        try:
-            shutil.copy(self.history_db, 'assets\\curr_history')
-        except IOError as e:
-            print("Unable to copy file. %s" % e)
-        except:
-            print("Unexpected error:", sys.exc_info())
+        shutil.copy(self.history_db, 'assets\\curr_history')
+
+    # # since chrome time is in miliseconds starting from 1601, we need to convert it into regular time
+    # def fromchrometime(self, int_time):
+    #     return datetime(int_time / 1000000 + (datetime.strftime('%s', '1601-01-01')), 'unixepoch')
 
     # convert database to tuples
     def extract(self):
         c = sqlite3.connect(self.history_db)
         cursor = c.cursor()
-        select_statement = "SELECT urls.url, urls.visit_count FROM urls, visits WHERE urls.id = visits.url;"
+        select_statement = "SELECT urls.url, urls.last_visit_time, urls.title " \
+                           "FROM urls, visits WHERE urls.id = visits.url;"
         cursor.execute(select_statement)
-        self.db_tuple = cursor.fetchall() # tuple
+        db_set = list(cursor.fetchall()) # originally tuple
 
-    def __init__(self):
+        # convert integer time to regular time
+        for item in db_set:
+            print(item[1])
+            item[1] = datetime.datetime.utcfromtimestamp(item[1] / 1e16 - datetime.datetime(1601, 1, 1).timestamp())
 
-        # obtain history database
-        print('intitalizing')
+        return db_set
+
+    def start(self):
+        self.starting_history_db = self.database_extraction()
+
+    def stop(self):
+        self.ending_history_db = self.database_extraction()
+
+    # obtain history database
+    def database_extraction(self):
         self.search()
         self.copy()
         self.search(data_path='assets', item='curr_history')
-        self.extract()
-#
+        return self.extract()
+
+    def __init__(self):
+        pass
+
 # class XMLParsing:
 #
 #     def parse(self, url):

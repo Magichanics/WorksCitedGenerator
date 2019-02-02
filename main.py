@@ -5,5 +5,6 @@ Date: January 31st, 2018
 
 from historyextract import HistoryExtract
 
-hE = HistoryExtract()
-print(hE.db_tuple[0][0])
+historyextractor = HistoryExtract()
+historyextractor.start()
+print(historyextractor.starting_history_db)
