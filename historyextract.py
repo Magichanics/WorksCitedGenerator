@@ -1,24 +1,16 @@
 '''
-Name: Magichanics, vivekandathil
+Name: Magichanics
 Date: January 31st, 2019
-
-Sources:
-https://geekswipe.net/technology/computing/analyze-chromes-browsing-history-with-python/
 '''
 
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
-# import xml.etree.ElementTree as ET
-# from xmljson import parker
-# from json import dumps
-# import requests
 import os
 import shutil
 import sqlite3
 import datetime
 import platform
 import pandas as pd
+import warnings
+from citeurl import CiteURL
 
 class HistoryExtract:
 
@@ -36,7 +28,11 @@ class HistoryExtract:
     def chrome_to_real_time(self, microseconds):
         return datetime.datetime(1601, 1, 1) + datetime.timedelta(microseconds=microseconds)
 
-    # convert database to tuples
+    # extract the authors and date of publication
+    def extract_author_date(self, url):
+        xmlFile = requests.get(url)
+
+    # convert database to tuples to dataframe
     def extract(self):
         c = sqlite3.connect(self.history_db)
         cursor = c.cursor()
@@ -47,21 +43,54 @@ class HistoryExtract:
 
         # convert chrome timestamps into regular ones and place into separate lists
         db_timestamps = [self.chrome_to_real_time(n[1]) for n in db_tuple]
-        db_names = [n[0] for n in db_tuple]
-        db_urls = [n[2] for n in db_tuple]
+        db_names = [n[2] for n in db_tuple]
+        db_urls = [n[0] for n in db_tuple]
 
         # store in dataframe
-        history_df = pd.DataFrame({'names': db_names, 'timestamp': db_timestamps, 'urls': db_urls})
+        history_df = pd.DataFrame({'name': db_names, 'timestamp': db_timestamps, 'urls': db_urls})
 
         return history_df
 
+    # save start of time
     def start(self):
-        self.starting_history_df = self.database_extraction()
-        self.starting_history_df.to_csv('assets\\starting_history.csv')
+        self.starting_time = datetime.datetime.now()
 
-    def stop(self):
-        self.ending_history_df = self.database_extraction()
-        self.starting_history_df.to_csv('assets\\stopping_history.csv')
+    def stop(self, stopping_time=datetime.datetime.now(), save_all=False):
+
+        # load database for usage
+        self.history_df = self.database_extraction()
+
+        # get all rows that are within the two given timestamps (try and combine this into one line for efficiency)
+        if not save_all:
+            self.history_df = self.history_df[self.history_df.timestamp >= self.starting_time]
+            self.history_df = self.history_df[self.history_df.timestamp <= stopping_time]
+
+    # NOTE: This requires the stop function to be played first before this function could go.
+    def filter(self, tag, cols=['name'], save_to_obj=True):
+
+        # associate local variable with the main dataframe
+        local_history_df = self.history_df.copy()
+
+        # check if tag is in the string
+        def check_string(x):
+            for f in cols:
+                if tag in x[f]:
+                    return True
+            return False
+
+        # apply to all columns
+        local_history_df['valid'] = local_history_df[cols].apply(check_string,axis=1)
+        local_history_df = local_history_df[local_history_df.valid == False]
+        del local_history_df['valid']
+
+        # reset index due to the possible missing links
+        local_history_df = local_history_df.reset_index()
+
+        # return dataframe
+        if not save_to_obj:
+            return local_history_df
+        else:
+            self.history_df = local_history_df
 
     # obtain history database
     def database_extraction(self):
@@ -70,34 +99,7 @@ class HistoryExtract:
         self.search(data_path='assets', item='curr_history')
         return self.extract()
 
+    # get starting time
     def __init__(self):
-        pass
-
-# class XMLParsing:
-#
-#     def parse(self, url):
-#         # Get content from provided URL
-#         xmlFile = requests.get(url)
-#
-#         # Store binary data from url into xml file.
-#         # 'wb' (write binary) is required to write the page contents to a file in XML format.
-#         with open('feed.xml', 'wb') as file:
-#             file.write(xmlFile.content)
-#             print('XML file created and written')
-#
-#         # parse xml file, get the root, and store in a string
-#         tree = ET.parse('feed.xml')
-#         root = tree.getroot()
-#         xmlstr = ET.tostring(root, encoding='utf8', method='xml')
-#
-#         # convert to JSON using dumps method, in "parker" format
-#         a = dumps(parker.data(ET.fromstring(xmlstr)), sort_keys=True, indent=4, separators=(',', ': '))
-#
-#         # write to JSON file
-#         with open('File.JSON', 'w') as outfile:
-#             outfile.write((a))
-#             print("JSON File written")  # Success message
-#
-#     def __init__(self):
-#         pass
+        self.starting_time = datetime.datetime.now()
 
