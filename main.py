@@ -1,6 +1,6 @@
 '''
 Name: Magichanics
-Date: January 31st, 2018
+Date: January 31st, 2019
 '''
 
 from historyextract import HistoryExtract
@@ -25,6 +25,7 @@ historyextractor.stop(save_all=True)
 historyextractor.filter('google', cols=['name', 'url'])
 print(historyextractor.history_df)
 print('getting more information')
-print(to_cite(historyextractor.history_df.head(50)).dropna())
+test_history_df = historyextractor.history_df.head(100)
+print(to_cite(test_history_df).dropna())
 
 

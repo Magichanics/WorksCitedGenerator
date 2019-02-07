@@ -1,6 +1,6 @@
 '''
 Name: Magichanics
-February 3rd, 2019
+Date: February 3rd, 2019
 '''
 # import requests
 #from newspaper import Article # use newspaper3k
