@@ -46,8 +46,14 @@ class HistoryExtract:
         db_names = [n[2] for n in db_tuple]
         db_urls = [n[0] for n in db_tuple]
 
+        # convert to lowercase
+        db_names = [n.lower() for n in db_names]
+
         # store in dataframe
-        history_df = pd.DataFrame({'name': db_names, 'timestamp': db_timestamps, 'urls': db_urls})
+        history_df = pd.DataFrame({'name': db_names, 'timestamp': db_timestamps, 'url': db_urls})
+
+        # remove duplicate urls
+        history_df = history_df.drop_duplicates(subset=['url'],keep='last')
 
         return history_df
 
@@ -84,7 +90,7 @@ class HistoryExtract:
         del local_history_df['valid']
 
         # reset index due to the possible missing links
-        local_history_df = local_history_df.reset_index()
+        local_history_df = local_history_df.reset_index(drop=True)
 
         # return dataframe
         if not save_to_obj:
