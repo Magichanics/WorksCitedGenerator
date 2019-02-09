@@ -5,13 +5,22 @@ Date: February 3rd, 2019
 # import requests
 #from newspaper import Article # use newspaper3k
 import newspaper
-# import pythonwhois
+import whois # python-whois
 import numpy as np
 
 class CiteURL:
 
-    # def get_publisher(self):
-    #     return pythonwhois.get_whois(self.url)
+    # use whois module to obtain publisher (use either registrar or registrant name)
+    def get_publisher(self):
+        # get whois information
+        url_whois = whois.whois(self.url)
+        try:
+            return url_whois['registrant_name'][0]
+        except KeyError:
+            try:
+                return url_whois['registrar']
+            except KeyError:
+                return np.nan
 
     # return given properties using newspaper module
     def get_authors(self):
@@ -40,7 +49,7 @@ class CiteURL:
             self.article = None
 
 
-# citations = CiteURL('https://www.macleans.ca/education/best-computer-science-universities-in-canada-2018-ranking/')
-# print(citations.get_authors())
+citations = CiteURL('https://www.bloomberg.com/profiles/companies/756657Z:US-markmonitor-inc')
+print(citations.get_publisher())
 # print(citations.get_publisher())
 
