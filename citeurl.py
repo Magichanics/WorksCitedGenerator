@@ -12,11 +12,13 @@ note: compare the two methods; beautifulsoup + urllib2 vs. mechanize for fetchin
 # import requests
 #from newspaper import Article # use newspaper3k
 import newspaper
-import whois # python-whois
 import numpy as np
+import requests
+from lxml.html import fromstring
+# from mechanize import Browser
 from bs4 import BeautifulSoup
 import urllib
-# from mechanize import Browser
+# import whois # python-whois
 
 class CiteURL:
 
@@ -43,7 +45,13 @@ class CiteURL:
         elif self.article.authors == None:
             return np.nan
 
-        return ''.join(str(a) + ', ' for a in self.article.authors)[:-2]
+        authors = self.article.authors
+
+        # check if it is in the list of banned "authors":
+        if 'About Us' in authors:
+            authors.remove('About Us')
+
+        return ''.join(str(a) + ', ' for a in authors)[:-2]
 
     def get_date(self):
 
@@ -56,10 +64,22 @@ class CiteURL:
 
         return self.article.publish_date
 
-    # this cannot be null.
+    # this cannot be null?
     def get_name(self):
-        soup = BeautifulSoup(urllib.request.urlopen(self.url))
-        return soup.title.string
+
+        # method 1: using BeautifulSoup to fetch title
+        try:
+            soup = BeautifulSoup(urllib.request.urlopen(self.url))
+            return soup.title.string
+
+        # method 2: using requests to fetch article title
+        except urllib.error.HTTPError:
+            print('Method 1 failed. Trying Method 2.')
+            print('Issues with URL: ' + self.url)
+            # return self.article.title # find another way to fetch the title
+            r = requests.get(self.url)
+            tree = fromstring(r.content)
+            return tree.findtext('.//title')
 
     # setup url for parsing
     def __init__(self, url):

@@ -52,5 +52,7 @@ if __name__ == "__main__":
     test_manual_input()
     # test_history_extraction()
 
+# some errors: urllib.error.HTTPError: HTTP Error 503: Service Temporarily Unavailable
+
 
 
