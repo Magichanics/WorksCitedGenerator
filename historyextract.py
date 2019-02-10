@@ -36,21 +36,21 @@ class HistoryExtract:
     def extract(self):
         c = sqlite3.connect(self.history_db)
         cursor = c.cursor()
-        select_statement = "SELECT urls.url, urls.last_visit_time, urls.title " \
+        select_statement = "SELECT urls.url, urls.last_visit_time " \
                            "FROM urls, visits WHERE urls.id = visits.url;"
         cursor.execute(select_statement)
         db_tuple = cursor.fetchall() # originally tuple
 
         # convert chrome timestamps into regular ones and place into separate lists
         db_timestamps = [self.chrome_to_real_time(n[1]) for n in db_tuple]
-        db_names = [n[2] for n in db_tuple]
+        # db_names = [n[2] for n in db_tuple]
         db_urls = [n[0] for n in db_tuple]
 
         # # convert to lowercase
         # db_names = [n.lower() for n in db_names]
 
         # store in dataframe
-        history_df = pd.DataFrame({'name': db_names, 'timestamp_access': db_timestamps, 'url': db_urls})
+        history_df = pd.DataFrame({'timestamp_access': db_timestamps, 'url': db_urls})
 
         # remove duplicate urls
         history_df = history_df.drop_duplicates(subset=['url'],keep='last')

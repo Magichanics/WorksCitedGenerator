@@ -3,41 +3,42 @@ Name: Magichanics
 Date: January 31st, 2019
 '''
 
-from historyextract import HistoryExtract
 from citeurl import CiteURL
-from newspaper import Article
-from workscitedcreation import WorksCited
-import numpy as np
+from doccreation import WorksCited
 
-def news(df):
-    pass
+class WorksCitedGenerator:
 
-def to_cite(df):
+    def get_attributes(self):
 
-    # get author and date
-    df['CiteURL_obj'] = df['url'].apply(lambda x: CiteURL(x))
-    df['timestamp_publication'] = df['CiteURL_obj'].apply(lambda x: x.get_date())
-    df['authors'] = df['CiteURL_obj'].apply(lambda x: x.get_authors())
-    # df['publishers'] = df['CiteURL_obj'].apply(lambda x: x.get_publisher())
-    del df['CiteURL_obj']
+        # get citation object (better than redownloading websites per attribute)
+        self.url_df['CiteURL_obj'] = self.url_df['url'].apply(lambda x: CiteURL(x))
 
-    return df
+        # apply attributes
+        self.url_df['timestamp_publication'] = self.url_df['CiteURL_obj'].apply(lambda x: x.get_date())
+        self.url_df['authors'] = self.url_df['CiteURL_obj'].apply(lambda x: x.get_authors())
+        self.url_df['name'] = self.url_df['CiteURL_obj'].apply(lambda x: x.get_name())
 
-def cite_to_sheet(x):
-    wc.add_citation(x.authors, x.timestamp_publication, x.name, x.url)
+        # delete citation object
+        del self.url_df['CiteURL_obj']
 
-historyextractor = HistoryExtract()
-historyextractor.stop(save_all=True)
-historyextractor.filter('google', cols=['name', 'url'])
-print(historyextractor.history_df)
-print('getting more information')
-test_history_df = historyextractor.history_df.head(10)
-print(to_cite(test_history_df))
-print(test_history_df['timestamp_publication'])
-print(test_history_df['name']) #error name is index???
-test_history_df[['timestamp_publication', 'authors']] = test_history_df[['timestamp_publication', 'authors']].fillna(0)
-wc = WorksCited()
-test_history_df.apply(cite_to_sheet, axis=1)
-wc.save()
+    def citation_generator(self, save_location='WorksCited.docx'):
 
+        # replace nulls with zeroes.
+        self.url_df = self.url_df.fillna(0)
+
+        # create new works cited sheet
+        wc = WorksCited()
+
+        # add citation per row with the given attributes
+        def cite_to_sheet(x):
+            wc.add_citation(x.authors, x.timestamp_publication, x['name'], x.url)
+        self.url_df.apply(cite_to_sheet, axis=1)
+
+        # save based on given file location
+        wc.save(save_location)
+
+    def __init__(self, df):
+
+        # dataframe must have a column of urls
+        self.url_df = df
 
