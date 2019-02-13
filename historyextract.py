@@ -1,5 +1,5 @@
 '''
-Name: Magichanics
+Name: Jan Garong
 Date: January 31st, 2019
 '''
 

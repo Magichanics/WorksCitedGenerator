@@ -1,5 +1,5 @@
 '''
-Name: Magichanics
+Name: Jan Garong
 Date: February 3rd, 2019
 
 format:
@@ -11,14 +11,20 @@ note: compare the two methods; beautifulsoup + urllib2 vs. mechanize for fetchin
 '''
 # import requests
 #from newspaper import Article # use newspaper3k
-import newspaper
+# import whois # python-whois
+# from mechanize import Browser
+from newspaper import Article
 import numpy as np
 import requests
 from lxml.html import fromstring
-# from mechanize import Browser
 from bs4 import BeautifulSoup
 import urllib
-# import whois # python-whois
+from threading import Thread, Event
+import time
+
+# for websites that take way too long
+import multiprocessing
+import time
 
 class CiteURL:
 
@@ -34,67 +40,110 @@ class CiteURL:
     #         except KeyError:
     #             return np.nan
 
+    # def get_authors_html(self, htmlfile):
+    #
+    #     # "author": x, is what we'll be looking for
+    #     # look for starting index that contains "author:"
+    #     idx = htmlfile.find('"author":')
+    #     author_part = htmlfile[idx:]
+    #
+    #     # look for comma, and have the string only include the content in "author":
+    #     idx_x = author_part.find(',')
+    #     author_part = author_part[:idx_x][10:].strip('"')
+    #     print(author_part)
+
+
     # return given properties using newspaper module
     def get_authors(self):
 
-        # we need two if statements to prevent an attribute error from occuring.
-        # check if empty
-        if self.article == None:
+        try:
+            # use library to get authors
+            authors = self.article.authors
+
+            # check if it is in the list of banned "authors":
+            if 'About Us' in authors:
+                authors.remove('About Us')
+
+            return ''.join(str(a) + ', ' for a in authors)[:-2]
+        except:
             return np.nan
-        # check if not doable
-        elif self.article.authors == None:
-            return np.nan
 
-        authors = self.article.authors
-
-        # check if it is in the list of banned "authors":
-        if 'About Us' in authors:
-            authors.remove('About Us')
-
-        return ''.join(str(a) + ', ' for a in authors)[:-2]
-
+    # get the publishing date
     def get_date(self):
-
-        # check if empty
-        if self.article == None:
+        try:
+            return self.article.publish_date
+        except:
             return np.nan
-        # check if not doable
-        if self.article.publish_date == None:
-            return np.nan
-
-        return self.article.publish_date
 
     # this cannot be null?
     def get_name(self):
 
-        # method 1: using BeautifulSoup to fetch title
+        # use BeautifulSoup and urllib to get the title
         try:
             soup = BeautifulSoup(urllib.request.urlopen(self.url))
             return soup.title.string
+        except:
+            return ''
 
-        # method 2: using requests to fetch article title
-        except urllib.error.HTTPError:
-            print('Method 1 failed. Trying Method 2.')
-            print('Issues with URL: ' + self.url)
-            # return self.article.title # find another way to fetch the title
-            r = requests.get(self.url)
-            tree = fromstring(r.content)
-            return tree.findtext('.//title')
+        # # method 2: using requests to fetch article title
+        # except urllib.error.HTTPError:
+        #     print('Method 1 failed. Trying Method 2.')
+        #     print('Issues with URL: ' + self.url)
+        #     self.status = 'Warning'
+        #
+        #     # return self.article.title # find another way to fetch the title (can be inaccurate)
+        #     r = requests.get(self.url)
+        #     tree = fromstring(r.content)
+        #     return tree.findtext('.//title')
 
-    # setup url for parsing
-    def __init__(self, url):
+    def timeout(self, function):
 
-        self.url = url
-        self.article = newspaper.Article(url)
+        # create thread
+        action_thread = Thread(target=function)
 
+        # start timer
+        action_thread.start()
+        action_thread.join(timeout=2)
+
+        # tell the function to stop
+        self.stop_event.set()
+
+    def download_article(self):
         # check if it will download; if it won't, leave it blank
         try:
+
             # download and parse article
             self.article.download()
             self.article.html
             self.article.parse()
-        except newspaper.article.ArticleException:
+
+            # if it takes too long
+            if self.stop_event.is_set():
+                self.article = np.nan
+
+        except:
+            self.article = np.nan
+
+    # setup url for parsing
+    def __init__(self, url):
+
+        # check if empty
+        if url == '':
             self.article = None
+
+        # get webpage
+        self.url = url
+        self.article = Article(url)
+
+        # download article without timeout
+        #self.download_article()
+
+        # declare event
+        self.stop_event = Event()
+
+        # download article with timeout
+        self.timeout(self.download_article)
+
 
 
 

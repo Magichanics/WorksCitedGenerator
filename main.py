@@ -10,28 +10,15 @@ class WorksCitedGenerator:
 
     def get_attributes(self):
 
-        # get citation object (better than redownloading websites per attribute)
-        def deny_bad_links(x):
-            if x[4:] == '.pdf':
-                return CiteURL('')
-            else:
-                return CiteURL(x)
-
-        self.url_df['CiteURL_obj'] = self.url_df['url'].apply(deny_bad_links)
+        self.url_df['CiteURL_obj'] = self.url_df['url'].apply(CiteURL)
 
         # apply attributes
-        self.url_df['timestamp_publication'] = self.url_df['CiteURL_obj'].apply(lambda x: x.get_date())
         self.url_df['authors'] = self.url_df['CiteURL_obj'].apply(lambda x: x.get_authors())
         self.url_df['name'] = self.url_df['CiteURL_obj'].apply(lambda x: x.get_name())
+        self.url_df['timestamp_publication'] = self.url_df['CiteURL_obj'].apply(lambda x: x.get_date())
 
-        # add warnings if there are nulls
-        def check_items(x):
-            if any(x.isnull()):
-                return 'Warning'
-            else:
-                return 'Safe'
-
-        self.url_df.apply(check_items)
+        # check if there are nulls per row
+        self.url_df['Warning'] = self.url_df.apply(lambda x:any(x.isnull()),axis=1)
 
         # delete citation object
         del self.url_df['CiteURL_obj']

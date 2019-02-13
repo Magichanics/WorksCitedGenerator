@@ -1,5 +1,5 @@
 '''
-Name: Magichanics
+Name: Jan Garong
 Date: February 6th, 2019
 
 format:
@@ -60,21 +60,22 @@ class WorksCited:
 
         # check if there are no known authors
         if authors == 0:
-            authors = '' # lave it blank
+            authors = '' # leave it blank
         else: # add trailing space between date and name
             authors += ' '
 
-        # check if there is a date
-        if date == 0:
-            date_string = '(n.d)'
-        else: # convert datetime to string, formatted accordingly to APA
+        # see if you can get the date and time according to APA
+        try:
             date_string = self.time_to_string(date)
+        except:
+            date_string = '(n.d)'
 
         # I don't think there will be an instance where the title or url is going to be missing, but just in case, leave
         # the if statements for them right here.
 
         # create citation
         p = self.document.add_paragraph(authors + date_string + '. ')
+        p.line_spacing_rule = WD_LINE_SPACING.DOUBLE
         p.add_run(name + '.').italic = True
         p.add_run(' Retrieved from ' + url)
 
