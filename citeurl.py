@@ -10,7 +10,6 @@ using beautifulsoup4 not BeautifulSoup
 note: compare the two methods; beautifulsoup + urllib2 vs. mechanize for fetching webpage titles
 '''
 # import requests
-#from newspaper import Article # use newspaper3k
 # import whois # python-whois
 # from mechanize import Browser
 from newspaper import Article
@@ -27,31 +26,6 @@ import multiprocessing
 import time
 
 class CiteURL:
-
-    # # use whois module to obtain publisher (use either registrar or registrant name)
-    # def get_publisher(self):
-    #     # get whois information
-    #     url_whois = whois.whois(self.url)
-    #     try:
-    #         return url_whois['registrant_name'][0]
-    #     except KeyError:
-    #         try:
-    #             return url_whois['registrar']
-    #         except KeyError:
-    #             return np.nan
-
-    # def get_authors_html(self, htmlfile):
-    #
-    #     # "author": x, is what we'll be looking for
-    #     # look for starting index that contains "author:"
-    #     idx = htmlfile.find('"author":')
-    #     author_part = htmlfile[idx:]
-    #
-    #     # look for comma, and have the string only include the content in "author":
-    #     idx_x = author_part.find(',')
-    #     author_part = author_part[:idx_x][10:].strip('"')
-    #     print(author_part)
-
 
     # return given properties using newspaper module
     def get_authors(self):
@@ -75,26 +49,29 @@ class CiteURL:
         except:
             return np.nan
 
-    # this cannot be null?
+    # main function to get the name of the article
     def get_name(self):
 
-        # use BeautifulSoup and urllib to get the title
-        try:
+        # get name of the article through goose library
+        def get_name_goose():
+            g = Goose()
+            g_article = g.extract(self.url)
+            return g_article.title
+
+        # get name of the article through urllib and beautifulsoup
+        def get_name_soup():
             soup = BeautifulSoup(urllib.request.urlopen(self.url))
             return soup.title.string
-        except:
-            return ''
 
-        # # method 2: using requests to fetch article title
-        # except urllib.error.HTTPError:
-        #     print('Method 1 failed. Trying Method 2.')
-        #     print('Issues with URL: ' + self.url)
-        #     self.status = 'Warning'
-        #
-        #     # return self.article.title # find another way to fetch the title (can be inaccurate)
-        #     r = requests.get(self.url)
-        #     tree = fromstring(r.content)
-        #     return tree.findtext('.//title')
+        # use various methods to fetch the title
+        try:
+            return get_name_soup()
+        except:
+            try:
+                return get_name_goose()
+            except:
+                print('fail at ' + self.url)
+                return ''
 
     def timeout(self, function):
 
