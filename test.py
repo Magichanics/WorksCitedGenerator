@@ -2,7 +2,7 @@
 Name: Jan Garong
 Date: February 9th, 2019
 '''
-from main import WorksCitedGenerator
+from __init__ import WorksCitedGenerator
 from historyextract import HistoryExtract
 import sys
 import pandas as pd
@@ -12,8 +12,9 @@ def generate_wcp(url_df, location):
     wcg = WorksCitedGenerator(url_df)
     print('fetching metadata...')
     wcg.get_attributes()
-    url_df.to_csv('lookathis.csv')
-    wcg.citation_generator(location)
+    # url_df.to_excel('assets/metadata.xls') # csv or xls? xls requires xlwt
+    wcg.export_table()
+    #wcg.citation_generator(location)
 
 '''
 Uses Google Chrome History to create the citations

@@ -5,6 +5,7 @@ Date: January 31st, 2019
 
 from citeurl import CiteURL
 from doccreation import WorksCited
+import pandas as pd
 
 class WorksCitedGenerator:
 
@@ -15,13 +16,46 @@ class WorksCitedGenerator:
         # apply attributes
         self.url_df['authors'] = self.url_df['CiteURL_obj'].apply(lambda x: x.get_authors())
         self.url_df['name'] = self.url_df['CiteURL_obj'].apply(lambda x: x.get_name())
-        self.url_df['timestamp_publication'] = self.url_df['CiteURL_obj'].apply(lambda x: x.get_date())
+        self.url_df['timestamp'] = self.url_df['CiteURL_obj'].apply(lambda x: x.get_date())
 
-        # check if there are nulls per row
-        self.url_df['Warning'] = self.url_df.apply(lambda x:any(x.isnull()),axis=1)
+        # # check if there are nulls per row
+        # self.url_df['Warning'] = self.url_df.apply(lambda x:any(x.isnull()),axis=1)
 
         # delete citation object
         del self.url_df['CiteURL_obj']
+
+    def export_table(self, location="assets/metadata.csv"):
+
+        # expand time and remove timestamp
+        self.url_df['year'] = self.url_df['timestamp'].apply(lambda x: x.year)
+        self.url_df['month'] = self.url_df['timestamp'].apply(lambda x: x.month)
+        self.url_df['day'] = self.url_df['timestamp'].apply(lambda x: x.day)
+
+        del self.url_df['timestamp']
+
+        # export csv
+        self.url_df.to_csv(location)
+
+    def import_table(self, location="assets/metadata.csv"):
+
+        # import csv
+        self.url_df = pd.read_csv(location)
+
+        def ints_to_timestamp(x):
+
+            # check if timestamp exist
+            if x.year != np.nan or x.month != np.nan or x.day != np.nan:
+                return datetime(year=x.year, month=x.month, day=x.day)
+            else:
+                return np.nan
+
+        # convert time columns into datetime formats
+        self.url_df['timestamp'] = self.url_df[['year', 'month', 'day']].apply(ints_to_timestamp,axis=1)
+
+        # remove extra columns
+        del self.url_df['year']
+        del self.url_df['month']
+        del self.url_df['day']
 
     def citation_generator(self, save_location='WorksCited.docx'):
 
@@ -33,7 +67,7 @@ class WorksCitedGenerator:
 
         # add citation per row with the given attributes
         def cite_to_sheet(x):
-            wc.add_citation(x.authors, x.timestamp_publication, x['name'], x.url)
+            wc.add_citation(x.authors, x.timestamp, x['name'], x.url)
         self.url_df.apply(cite_to_sheet, axis=1)
 
         # save based on given file location
@@ -43,4 +77,6 @@ class WorksCitedGenerator:
 
         # dataframe must have a column of urls
         self.url_df = df
+
+
 
