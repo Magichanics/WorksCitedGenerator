@@ -12,7 +12,7 @@ note: compare the two methods; beautifulsoup + urllib2 vs. mechanize for fetchin
 # import requests
 # import whois # python-whois
 # from mechanize import Browser
-from newspaper import Article
+from newspaper import Article # newspaper3k
 import numpy as np
 import requests
 from lxml.html import fromstring
@@ -65,13 +65,16 @@ class CiteURL:
 
         # use various methods to fetch the title
         try:
-            return get_name_soup()
+            return self.article.title
         except:
             try:
-                return get_name_goose()
+                return get_name_soup()
             except:
-                print('fail at ' + self.url)
-                return ''
+                try:
+                    return get_name_goose()
+                except:
+                    print('fail at ' + self.url)
+                    return ''
 
     def timeout(self, function):
 
