@@ -6,6 +6,8 @@ Date: January 31st, 2019
 from citeurl import CiteURL
 from doccreation import WorksCited
 import pandas as pd
+import numpy as np
+from datetime import datetime
 
 class WorksCitedGenerator:
 
@@ -26,10 +28,27 @@ class WorksCitedGenerator:
 
     def export_table(self, location="assets/metadata.csv"):
 
+        # get time attributes
+        def get_date_attribute(x, type):
+
+            try:
+                if type == "year":
+                    return x.year
+
+                elif type == "month":
+                    return x.month
+
+                elif type == "day":
+                    return x.day
+
+            # if it doesn't exist, return null
+            except:
+                return np.nan
+
         # expand time and remove timestamp
-        self.url_df['year'] = self.url_df['timestamp'].apply(lambda x: x.year)
-        self.url_df['month'] = self.url_df['timestamp'].apply(lambda x: x.month)
-        self.url_df['day'] = self.url_df['timestamp'].apply(lambda x: x.day)
+        self.url_df['year'] = self.url_df['timestamp'].apply(lambda x: get_date_attribute(x, "year"))
+        self.url_df['month'] = self.url_df['timestamp'].apply(lambda x: get_date_attribute(x, "month"))
+        self.url_df['day'] = self.url_df['timestamp'].apply(lambda x: get_date_attribute(x, "day"))
 
         del self.url_df['timestamp']
 
@@ -44,9 +63,9 @@ class WorksCitedGenerator:
         def ints_to_timestamp(x):
 
             # check if timestamp exist
-            if x.year != np.nan or x.month != np.nan or x.day != np.nan:
+            try:
                 return datetime(year=x.year, month=x.month, day=x.day)
-            else:
+            except:
                 return np.nan
 
         # convert time columns into datetime formats
@@ -73,10 +92,10 @@ class WorksCitedGenerator:
         # save based on given file location
         wc.save(save_location)
 
-    def __init__(self, df):
+    def __init__(self):
 
-        # dataframe must have a column of urls
-        self.url_df = df
+        pass
+
 
 
 

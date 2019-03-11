@@ -15,7 +15,7 @@ do 0.5 inch from all sides.
 please use test_history_df.fillna(0) for nulls
 '''
 
-from docx import Document
+from docx import Document # docx is python-docx
 from docx.shared import Pt
 from docx.text.parfmt import ParagraphFormat
 from docx.enum.text import WD_LINE_SPACING
@@ -76,7 +76,7 @@ class WorksCited:
         # create citation
         p = self.document.add_paragraph(authors + date_string + '. ')
         p.line_spacing_rule = WD_LINE_SPACING.DOUBLE
-        p.add_run(name + '.').italic = True
+        p.add_run(str(name) + '.').italic = True # error: variable name might be 0.
         p.add_run(' Retrieved from ' + url)
 
     # save document

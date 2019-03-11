@@ -1,6 +1,6 @@
 '''
 Name: Jan Garong
-Date: February 10th, 2019
+Date: March 8th, 2019
 
 based off of example: https://www.blog.pythonlibrary.org/2011/08/20/wxpython-new-widget-announced-xlsgrid/
 
