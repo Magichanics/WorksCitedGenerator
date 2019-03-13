@@ -1,8 +1,8 @@
 '''
-Name: Jan Garong
+Author: Jan Garong
 Date: February 9th, 2019
 '''
-from __init__ import WorksCitedGenerator
+from workscitedgenerator import WorksCitedGenerator
 from historyextract import HistoryExtract
 import sys
 import pandas as pd

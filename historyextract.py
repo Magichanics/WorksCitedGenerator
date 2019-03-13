@@ -1,5 +1,5 @@
 '''
-Name: Jan Garong
+Author: Jan Garong
 Date: January 31st, 2019
 '''
 
