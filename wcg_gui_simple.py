@@ -107,11 +107,24 @@ class WCGSimplePanel(wx.Panel):
 
             # open the file
             openpath = fileDialog.GetPath()
-            wcg = WorksCitedGenerator()
-            wcg.import_table(openpath)
 
-            # save document
-            self.save_wcp(wcg)
+            try:
+
+                # convert dates into timestamps
+                wcg = WorksCitedGenerator()
+                wcg.import_table(openpath)
+
+                # save document
+                self.save_wcp(wcg)
+
+            except:
+
+                # print error message
+                error_msg = wx.MessageDialog(None, message='Invalid csv file. Please check that the csv file has \n' +
+                                 'the columns \"url\", \"authors\", \"name\", \"year\", \"month\", and \"day\"' +
+                                 'with year, month and day columns containing integers.', caption='Error')
+                error_msg.ShowModal()
+                error_msg.Destroy()
 
     def save_wcp(self, wcg):
 
