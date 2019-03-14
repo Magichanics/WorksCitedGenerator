@@ -81,6 +81,16 @@ class WCGSimplePanel(wx.Panel):
         error_msg.ShowModal()
         error_msg.Destroy()
 
+    def csv_parse_error(self):
+
+        # print error message for broken csv files
+        error_msg = wx.MessageDialog(None, message='Invalid csv file. Please check that the csv file has \n' +
+                                                   'the columns \"url\", \"authors\", \"name\", \"year\", \"month\", and \"day\"' +
+                                                   'with year, month and day columns containing integers.',
+                                     caption='Error')
+        error_msg.ShowModal()
+        error_msg.Destroy()
+
     # generate works cited page
     def generate_wcp(self, url_df, location):
 
@@ -130,18 +140,15 @@ class WCGSimplePanel(wx.Panel):
                 # save document
                 self.save_wcp(wcg)
 
-            except KeyError:
-
-                # print error message for broken csv files
-                error_msg = wx.MessageDialog(None, message='Invalid csv file. Please check that the csv file has \n' +
-                                 'the columns \"url\", \"authors\", \"name\", \"year\", \"month\", and \"day\"' +
-                                 'with year, month and day columns containing integers.', caption='Error')
-                error_msg.ShowModal()
-                error_msg.Destroy()
-
             except IOError:
 
                 self.file_directory_error()
+
+            except:
+
+                # print error message for broken csv files
+                self.csv_parse_error()
+
 
 
     def save_wcp(self, wcg):
