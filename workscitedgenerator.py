@@ -28,20 +28,9 @@ class WorksCitedGenerator:
 
     def export_table(self, location="assets/metadata.csv"):
 
-        # get time attributes
         def get_date_attribute(x, type):
-
             try:
-                if type == "year":
-                    return x.year
-
-                elif type == "month":
-                    return x.month
-
-                elif type == "day":
-                    return x.day
-
-            # if it doesn't exist, return null
+                return getattr(x, type)
             except:
                 return np.nan
 

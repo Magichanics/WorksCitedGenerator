@@ -5,6 +5,8 @@ Date: March 9th, 2019
 
 from workscitedgenerator import WorksCitedGenerator
 from historyextract import HistoryExtract
+from django.core.validators import URLValidator
+from django.core.exceptions import ValidationError
 import pandas as pd
 import wx
 
@@ -59,6 +61,15 @@ class WCGSimplePanel(wx.Panel):
 
         return button_sizer
 
+    def check_url(self, url):
+
+        val = URLValidator()
+        try:
+            val(url)
+            return True
+        except ValidationError:
+            return False
+
     def fetch_urls(self, _):
 
         # store urls into a list
@@ -66,8 +77,24 @@ class WCGSimplePanel(wx.Panel):
 
         for i in range(self.text_input.GetNumberOfLines()):
 
-            # iterate through number of lines available, and add to urls
-            urls.append(self.text_input.GetLineText(i))
+            # get string of the current line:
+            text = self.text_input.GetLineText(i)
+
+            if self.check_url(text):
+
+                # iterate through number of lines available, and add to urls
+                urls.append(text)
+
+        # throw error if there is nothing
+        if urls == []:
+
+            # print error message for empty text box or invalid unput
+            error_msg = wx.MessageDialog(None, message='Input is either blank or mistyped. \n' +
+                                                       'Please enter a valid url.', caption='Error')
+            error_msg.ShowModal()
+            error_msg.Destroy()
+
+            return
 
         # create dataframe
         url_df = pd.DataFrame({'url': urls})
