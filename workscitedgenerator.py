@@ -49,16 +49,17 @@ class WorksCitedGenerator:
         # import csv
         self.url_df = pd.read_csv(location)
 
-        def ints_to_timestamp(x):
+        def ints_to_timestamp(x): # this is not working for some reason
 
             # check if timestamp exist
             try:
-                return datetime(year=x.year, month=x.month, day=x.day)
+                return datetime(year=int(x['year']), month=int(x['month']), day=int(x['day']))
             except:
                 return np.nan
 
         # convert time columns into datetime formats
-        self.url_df['timestamp'] = self.url_df[['year', 'month', 'day']].apply(ints_to_timestamp,axis=1)
+        self.url_df['timestamp'] = self.url_df.apply(lambda x: ints_to_timestamp(x),axis=1)
+        print(self.url_df.apply(lambda x: ints_to_timestamp(x),axis=1))
 
         # remove extra columns
         del self.url_df['year']
@@ -66,6 +67,7 @@ class WorksCitedGenerator:
         del self.url_df['day']
 
     def citation_generator(self, save_location='WorksCited.docx'):
+
 
         # replace nulls with zeroes.
         self.url_df = self.url_df.fillna(0)
@@ -75,7 +77,7 @@ class WorksCitedGenerator:
 
         # add citation per row with the given attributes
         def cite_to_sheet(x):
-            wc.add_citation(x.authors, x.timestamp, x['name'], x.url)
+            wc.add_citation(x.authors, x.timestamp, x['name'], x.url) # null here
         self.url_df.apply(cite_to_sheet, axis=1)
 
         # save based on given file location
