@@ -4,7 +4,6 @@ Date: March 9th, 2019
 '''
 
 from workscitedgenerator import WorksCitedGenerator
-from historyextract import HistoryExtract
 from django.core.validators import URLValidator
 from django.core.exceptions import ValidationError
 import pandas as pd
@@ -65,10 +64,19 @@ class WCGSimplePanel(wx.Panel):
 
         val = URLValidator()
         try:
+
+            # check url
             val(url)
             return True
+
         except ValidationError:
-            return False
+
+            # try again except remove whitespace characters
+            try:
+                val(url.strip())
+
+            except ValidationError:
+                return False
 
     def fetch_urls(self, _):
 
