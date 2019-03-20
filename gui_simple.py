@@ -71,9 +71,10 @@ class WCGSimplePanel(wx.Panel):
 
         except ValidationError:
 
-            # try again except remove whitespace characters
+            # try again except remove trailing spaces
             try:
                 val(url.strip())
+                return True
 
             except ValidationError:
                 return False
