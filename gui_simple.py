@@ -1,6 +1,9 @@
 '''
 Author: Jan Garong
 Date: March 9th, 2019
+
+Note: add MLA option
+fix Microsoft Excel compatability
 '''
 
 from workscitedgenerator import WorksCitedGenerator
@@ -48,6 +51,9 @@ class WCGSimplePanel(wx.Panel):
         btn_csv = wx.Button(self, -1, "Get CSV Metadata")
         btn_wcs = wx.Button(self, -1, "Get Works Cited Sheet")
 
+        # create dropdown bar
+        self.dd_bar = wx.Choice(self, -1, choices=["Select CSV Encoding", "UTF-8", "ISO-8859-1"])
+
         # bind into certain functions
         btn_csv.Bind(wx.EVT_BUTTON, self.fetch_urls)
         btn_wcs.Bind(wx.EVT_BUTTON, self.df_to_wcp)
@@ -55,6 +61,8 @@ class WCGSimplePanel(wx.Panel):
         # format buttons
         button_sizer = wx.BoxSizer(wx.HORIZONTAL)
         button_sizer.Add(btn_csv)
+        button_sizer.Add((-1, -1), proportion=1)
+        button_sizer.Add(self.dd_bar)
         button_sizer.Add((-1, -1), proportion=1)
         button_sizer.Add(btn_wcs)
 
@@ -80,6 +88,16 @@ class WCGSimplePanel(wx.Panel):
                 return False
 
     def fetch_urls(self, _):
+
+        # check formatting
+        if self.dd_bar.GetCurrentSelection() == 0:
+
+            # print error message for empty text box or invalid unput
+            error_msg = wx.MessageDialog(None, message='Please select a CSV encoder.', caption='Error')
+            error_msg.ShowModal()
+            error_msg.Destroy()
+
+            return
 
         # store urls into a list
         urls = []
@@ -108,7 +126,7 @@ class WCGSimplePanel(wx.Panel):
         # create dataframe
         url_df = pd.DataFrame({'url': urls})
 
-        self.generate_wcp(url_df, 'WorksCited_Manual.docx')
+        self.generate_wcs(url_df, 'WorksCited_Manual.docx')
 
     def file_directory_error(self):
 
@@ -127,8 +145,8 @@ class WCGSimplePanel(wx.Panel):
         error_msg.ShowModal()
         error_msg.Destroy()
 
-    # generate works cited page
-    def generate_wcp(self, url_df, location):
+    # generate works cited sheet
+    def generate_wcs(self, url_df, location):
 
         # set dataframe
         wcg = WorksCitedGenerator()
@@ -148,13 +166,23 @@ class WCGSimplePanel(wx.Panel):
             try:
 
                 savepath = fileDialog.GetPath()
-                wcg.export_table(savepath) # possible addition: check urls if they are valid
+                format_type = [None, 'UTF-8', 'ISO-8859-1']
+                wcg.export_table(savepath, format_type[self.dd_bar.GetCurrentSelection()]) # possible addition: check urls if they are valid
 
             except IOError:
 
                 self.file_directory_error()
 
     def df_to_wcp(self, _):
+
+        # check formatting
+        if self.dd_bar.GetCurrentSelection() == 0:
+            # print error message for empty text box or invalid unput
+            error_msg = wx.MessageDialog(None, message='Please select a CSV encoder.', caption='Error')
+            error_msg.ShowModal()
+            error_msg.Destroy()
+
+            return
 
         # open file
         with wx.FileDialog(frame, "Open metadata.csv",
@@ -171,7 +199,8 @@ class WCGSimplePanel(wx.Panel):
 
                 # convert dates into timestamps
                 wcg = WorksCitedGenerator()
-                wcg.import_table(openpath)
+                format_type = [None, 'UTF-8', 'ISO-8859-1']
+                wcg.import_table(openpath, format_type[self.dd_bar.GetCurrentSelection()])
 
                 # save document
                 self.save_wcp(wcg)

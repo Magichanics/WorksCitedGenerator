@@ -26,7 +26,7 @@ class WorksCitedGenerator:
         # delete citation object
         del self.url_df['CiteURL_obj']
 
-    def export_table(self, location="assets/metadata.csv"):
+    def export_table(self, location, csv_format='UTF-8'):
 
         def get_date_attribute(x, type):
             try:
@@ -42,12 +42,12 @@ class WorksCitedGenerator:
         del self.url_df['timestamp']
 
         # export csv
-        self.url_df.to_csv(location)
+        self.url_df.to_csv(location, encoding=csv_format) # change encoding if possible?
 
-    def import_table(self, location="assets/metadata.csv"):
+    def import_table(self, location, csv_format='UTF-8'):
 
         # import csv
-        self.url_df = pd.read_csv(location)
+        self.url_df = pd.read_csv(location, encoding=csv_format) # change encoding if possible?
 
         def ints_to_timestamp(x): # this is not working for some reason
 
@@ -59,7 +59,6 @@ class WorksCitedGenerator:
 
         # convert time columns into datetime formats
         self.url_df['timestamp'] = self.url_df.apply(lambda x: ints_to_timestamp(x),axis=1)
-        print(self.url_df.apply(lambda x: ints_to_timestamp(x),axis=1))
 
         # remove extra columns
         del self.url_df['year']
