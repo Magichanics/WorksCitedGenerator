@@ -12,7 +12,7 @@ How to use:
 
 Once you have completed all three of these steps, you should have a Works Cited page done in APA format.
 
-### Dependancies:
+### Dependencies:
 * newspaper3k
 * BeautifulSoup4
 * python-docx
