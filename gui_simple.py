@@ -17,7 +17,8 @@ class WCGSimpleFrame(wx.Frame):
     def __init__(self):
 
         # setup window
-        wx.Frame.__init__(self, None, wx.ID_ANY, "Works Cited Generator")
+        wx.Frame.__init__(self, None, wx.ID_ANY, "Works Cited Generator",
+                          style=wx.SYSTEM_MENU | wx.CAPTION | wx.CLOSE_BOX)
         panel = wx.Panel(self, wx.ID_ANY)
 
         # create layout
@@ -40,6 +41,7 @@ class WCGSimplePanel(wx.Panel):
         # add objects to GUI formatting
         vbox = wx.BoxSizer(wx.VERTICAL)
         vbox.Add(self.text_input, proportion=1, flag=wx.EXPAND)
+        vbox.AddSpacer(5)
         vbox.Add(button_sizer, proportion=1, flag=wx.EXPAND)
         self.SetSizer(vbox)
         self.Fit()
@@ -240,7 +242,7 @@ if __name__ == "__main__":
     frame = WCGSimpleFrame()
 
     # set dimensions and position
-    frame.SetDimensions(0, 0, 640, 480)
+    frame.SetSize(0, 0, 640, 480)
     frame.Centre()
 
     # show and iterate
