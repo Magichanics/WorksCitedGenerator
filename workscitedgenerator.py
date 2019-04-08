@@ -67,16 +67,22 @@ class WorksCitedGenerator:
 
     def citation_generator(self, save_location='WorksCited.docx'):
 
-
         # replace nulls with zeroes.
         self.url_df = self.url_df.fillna(0)
 
         # create new works cited sheet
         wc = WorksCited()
 
+        # sort alphabetically
+        def mock_cite_to_sheet(x):
+            return wc.add_mock_citation(x.authors, x.timestamp, x['name'], x.url)
+        self.url_df['str_citations'] = self.url_df.apply(mock_cite_to_sheet, axis=1)
+        self.url_df = self.url_df.sort_values('str_citations')
+        del self.url_df['str_citations']
+
         # add citation per row with the given attributes
         def cite_to_sheet(x):
-            wc.add_citation(x.authors, x.timestamp, x['name'], x.url) # null here
+            wc.add_citation(x.authors, x.timestamp, x['name'], x.url) # null here, also must be x['name'] and not x.name
         self.url_df.apply(cite_to_sheet, axis=1)
 
         # save based on given file location

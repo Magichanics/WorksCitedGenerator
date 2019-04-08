@@ -7,10 +7,8 @@ https://owl.purdue.edu/owl/research_and_citation/apa_style/apa_formatting_and_st
 
 Some notes:
 Works Cited (centered)
-Margin is 0.5
+Margin is 1
 Author, "Title" Publisher, (Year, Month Day), URL
-
-do 0.5 inch from all sides.
 
 please use test_history_df.fillna(0) for nulls
 '''
@@ -37,10 +35,16 @@ class WorksCited:
     def set_margins(self):
         sections = self.document.sections
         for s in sections:
-            # s.top_margin = Inches(0.5)
-            # s.bottom_margin = Inches(0.5)
-            s.left_margin = Inches(0.5)
-            s.right_margin = Inches(0.5)
+            s.top_margin = Inches(1)
+            s.bottom_margin = Inches(1)
+            s.left_margin = Inches(1)
+            s.right_margin = Inches(1)
+
+    # set format (double spacing % hanging indentations)
+    def set_format(self, is_title=False):
+        p_format = self.document.styles['Normal'].paragraph_format
+        p_format.line_spacing_rule = 2
+        p_format.first_line_indent = Inches(-0.25)
 
     def time_to_string(self, datetime_input):
 
@@ -55,13 +59,47 @@ class WorksCited:
         # combine them together (use regex please)
         return '(' + date_lst[0] + ', ' + date_lst[1] + ' ' + date_lst[2] + ')'
 
+    # def get_author_and_date(self, authors, date):
+    #
+    #     # check if there are no known authors
+    #     if authors == 0:
+    #         authors = ''  # leave it blank
+    #     else:  # add trailing space between date and name
+    #         authors += ' '
+    #
+    #     # see if you can get the date and time according to APA
+    #     try:
+    #         date_string = self.time_to_string(date)
+    #     except:
+    #         date_string = '(n.d)'
+    #
+    #     return authors, date_string
+
+    # similar to add_citation(), but returns a string value. Use this when doing alphabetical sorting.
+    def add_mock_citation(self, authors, date, name, url):
+
+        # check if there are no known authors
+        if authors == 0:
+            authors = ''  # leave it blank
+        else:  # add trailing space between date and name
+            authors += ' '
+
+        # see if you can get the date and time according to APA
+        try:
+            date_string = self.time_to_string(date)
+        except:
+            date_string = '(n.d)'
+
+        # return string citation
+        return authors + date_string + '. ' + str(name) + '.' + ' Retrieved from ' + url
+
     # add a new citation (needs name, date of publication/date of access, url, author/publisher)
     def add_citation(self, authors, date, name, url):
 
         # check if there are no known authors
         if authors == 0:
-            authors = '' # leave it blank
-        else: # add trailing space between date and name
+            authors = ''  # leave it blank
+        else:  # add trailing space between date and name
             authors += ' '
 
         # see if you can get the date and time according to APA
@@ -75,8 +113,7 @@ class WorksCited:
 
         # create citation
         p = self.document.add_paragraph(authors + date_string + '. ')
-        p.line_spacing_rule = WD_LINE_SPACING.DOUBLE
-        p.add_run(str(name) + '.').italic = True # error: variable name might be 0.
+        p.add_run(str(name) + '.').italic = True
         p.add_run(' Retrieved from ' + url)
 
     # save document
@@ -89,14 +126,12 @@ class WorksCited:
         # create title page
         self.document = Document()
 
-        # set font
-        self.set_font()
         p = self.document.add_paragraph("Works Cited")
-        p.style = self.document.styles['Normal']
 
         # use double spacing, and center page
-        p.line_spacing_rule = WD_LINE_SPACING.DOUBLE
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        self.set_format()
+        self.set_font()
 
         # set margins
         self.set_margins()
