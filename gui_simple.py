@@ -54,7 +54,7 @@ class WCGSimplePanel(wx.Panel):
         btn_wcs = wx.Button(self, -1, "Get Works Cited Sheet")
 
         # create dropdown bar
-        self.dd_bar = wx.Choice(self, -1, choices=["Select CSV Encoding", "UTF-8", "ISO-8859-1"])
+        self.dd_bar = wx.Choice(self, -1, choices=["UTF-8", "ISO-8859-1"])
 
         # bind into certain functions
         btn_csv.Bind(wx.EVT_BUTTON, self.fetch_urls)
@@ -168,7 +168,7 @@ class WCGSimplePanel(wx.Panel):
             try:
 
                 savepath = fileDialog.GetPath()
-                format_type = [None, 'UTF-8', 'ISO-8859-1']
+                format_type = ['UTF-8', 'ISO-8859-1']
                 wcg.export_table(savepath, format_type[self.dd_bar.GetCurrentSelection()]) # possible addition: check urls if they are valid
 
             except IOError:
@@ -201,7 +201,7 @@ class WCGSimplePanel(wx.Panel):
 
                 # convert dates into timestamps
                 wcg = WorksCitedGenerator()
-                format_type = [None, 'UTF-8', 'ISO-8859-1']
+                format_type = ['UTF-8', 'ISO-8859-1']
                 wcg.import_table(openpath, format_type[self.dd_bar.GetCurrentSelection()])
 
                 # save document
