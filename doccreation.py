@@ -59,24 +59,7 @@ class WorksCited:
         # combine them together (use regex please)
         return '(' + date_lst[0] + ', ' + date_lst[1] + ' ' + date_lst[2] + ')'
 
-    # def get_author_and_date(self, authors, date):
-    #
-    #     # check if there are no known authors
-    #     if authors == 0:
-    #         authors = ''  # leave it blank
-    #     else:  # add trailing space between date and name
-    #         authors += ' '
-    #
-    #     # see if you can get the date and time according to APA
-    #     try:
-    #         date_string = self.time_to_string(date)
-    #     except:
-    #         date_string = '(n.d)'
-    #
-    #     return authors, date_string
-
-    # similar to add_citation(), but returns a string value. Use this when doing alphabetical sorting.
-    def add_mock_citation(self, authors, date, name, url):
+    def get_author_and_date(self, authors, date):
 
         # check if there are no known authors
         if authors == 0:
@@ -89,6 +72,14 @@ class WorksCited:
             date_string = self.time_to_string(date)
         except:
             date_string = '(n.d)'
+
+        return authors, date_string
+
+    # similar to add_citation(), but returns a string value. Use this when doing alphabetical sorting.
+    def add_mock_citation(self, authors, date, name, url):
+
+        # check if there are no known authors
+        authors, date_string = self.get_author_and_date(authors, date)
 
         # return string citation
         return authors + date_string + '. ' + str(name) + '.' + ' Retrieved from ' + url
@@ -97,16 +88,7 @@ class WorksCited:
     def add_citation(self, authors, date, name, url):
 
         # check if there are no known authors
-        if authors == 0:
-            authors = ''  # leave it blank
-        else:  # add trailing space between date and name
-            authors += ' '
-
-        # see if you can get the date and time according to APA
-        try:
-            date_string = self.time_to_string(date)
-        except:
-            date_string = '(n.d)'
+        authors, date_string = self.get_author_and_date(authors, date)
 
         # I don't think there will be an instance where the title or url is going to be missing, but just in case, leave
         # the if statements for them right here.
